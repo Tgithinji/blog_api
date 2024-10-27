@@ -1,11 +1,8 @@
 from fastapi import FastAPI, status, HTTPException, Response, Depends
-from pydantic import BaseModel
-from typing import Optional
-from random import randrange
 from psycopg2.extras import RealDictCursor
 import psycopg2
 import time
-from . import models
+from . import models, schemas
 from .database import init_db, get_db
 from sqlalchemy.orm import Session
 
@@ -15,6 +12,7 @@ app = FastAPI()
 init_db()
 
 
+# structure of a request or response
 class Post(BaseModel):
     title: str
     content: str
@@ -39,44 +37,54 @@ while True:
 
 @app.get("/sqlachemy")
 def test_posts(db: Session = Depends(get_db)):
-    return {"status"}
+    posts = db.query(models.Post).all()
+    return {"data": posts}
 
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to my API"}
 
+
 # get posts path
 @app.get("/posts")
-def get_posts():
+def get_posts(db: Session = Depends(get_db)):
     """Get posts
     """
-    cursor.execute("""SELECT * FROM posts""")
-    all_posts = cursor.fetchall()
+    all_posts = db.query(models.Post).all()
+    # cursor.execute("""SELECT * FROM posts""")
+    # all_posts = cursor.fetchall()
     return {"data": all_posts}
 
 
 # Create posts path
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(post: Post):
-    cursor.execute(
-        """INSERT INTO posts (title, content)
-        VALUES (%s, %s) RETURNING *""",
-        (post.title, post.content)
-    )
-    new_post = cursor.fetchone()
-    conn.commit()
-    return {"data": new_post}
+def create_posts(post: schemas.Post, db: Session = Depends(get_db)):
+    # cursor.execute(
+    #     """INSERT INTO posts (title, content)
+    #     VALUES (%s, %s) RETURNING *""",
+    #     (post.title, post.content)
+    # )
+    # new_post = cursor.fetchone()
+    # conn.commit()
+
+    new_post = models.Post(**post.dict())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return new_post
 
 
 # Get one post
 @app.get("/posts/{id}")
-def get_post(id: int):
-    cursor.execute(
-        """SELECT * FROM posts
-        WHERE id = %s""", (str(id),)
-    )
-    post = cursor.fetchone()
+def get_post(id: int, db: Session = Depends(get_db)):
+    # cursor.execute(
+    #     """SELECT * FROM posts
+    #     WHERE id = %s""", (str(id),)
+    # )
+    # post = cursor.fetchone()
+
+    post = db.query(models.Post).filter(models.Post.id == id).first()
     # if post is not found raise a HTTP exception
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -86,31 +94,27 @@ def get_post(id: int):
 
 # Update a post
 @app.put("/posts/{id}")
-def update_post(id: int, post: Post):
-    cursor.execute(
-        """UPDATE posts
-        SET title = %s, content = %s, published = %s
-        WHERE id = %s
-        RETURNING *
-        """,
-        (post.title, post.content, post.published, str(id),)
-    )
-    updated_post = cursor.fetchone()
-    conn.commit()
+def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
+    post_query = db.query(models.Post).filter(models.Post.id ==  id)
 
-    if not updated_post:
+    if not post_query.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=f"id {id} does not exist")
-    return {"data": updated_post}
+    
+    post_query.update(post.dict(), synchronize_session=False)
+    db.commit()
+    return {"data": post_query.first()}
 
 
 # Delete a post
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_posts(id: int):
-    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *""", (str(id),))
-    deleted_post = cursor.fetchone()
-    if not deleted_post:
+def delete_posts(id: int, db: Session = Depends(get_db)):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+
+    if not post_query.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=f"id {id} does not exist")
-    conn.commit()
+
+    post_query.delete(synchronize_session=False)
+    db.commit()    
     return Response(status_code=status.HTTP_204_NO_CONTENT)
