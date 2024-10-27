@@ -1,12 +1,18 @@
-from fastapi import FastAPI, status, HTTPException, Response
+from fastapi import FastAPI, status, HTTPException, Response, Depends
 from pydantic import BaseModel
 from typing import Optional
 from random import randrange
 from psycopg2.extras import RealDictCursor
 import psycopg2
 import time
+from . import models
+from .database import init_db, get_db
+from sqlalchemy.orm import Session
 
 app = FastAPI()
+
+# initialize database tables
+init_db()
 
 
 class Post(BaseModel):
@@ -29,6 +35,11 @@ while True:
         print('Connection to database failed')
         print('Error: ', error)
         time.sleep(2)
+
+
+@app.get("/sqlachemy")
+def test_posts(db: Session = Depends(get_db)):
+    return {"status"}
 
 
 @app.get("/")
