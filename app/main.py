@@ -12,13 +12,6 @@ app = FastAPI()
 init_db()
 
 
-# structure of a request or response
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
 # Continue only when database is connected
 while True:
     try:
@@ -38,7 +31,7 @@ while True:
 @app.get("/sqlachemy")
 def test_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
-    return {"data": posts}
+    return posts
 
 
 @app.get("/")
@@ -54,11 +47,11 @@ def get_posts(db: Session = Depends(get_db)):
     all_posts = db.query(models.Post).all()
     # cursor.execute("""SELECT * FROM posts""")
     # all_posts = cursor.fetchall()
-    return {"data": all_posts}
+    return all_posts
 
 
 # Create posts path
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostReturned)
 def create_posts(post: schemas.Post, db: Session = Depends(get_db)):
     # cursor.execute(
     #     """INSERT INTO posts (title, content)
@@ -89,7 +82,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id {id} does not exist")
-    return {"post_details": post}
+    return post
 
 
 # Update a post
@@ -103,7 +96,7 @@ def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
     
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
-    return {"data": post_query.first()}
+    return post_query.first()
 
 
 # Delete a post
