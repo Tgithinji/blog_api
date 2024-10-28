@@ -37,3 +37,9 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+
+# login structure
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

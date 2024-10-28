@@ -3,7 +3,7 @@ from psycopg2.extras import RealDictCursor
 import psycopg2
 import time
 from .database import init_db
-from .routes import blog, user
+from .routes import blog, user, auth
 
 app = FastAPI()
 
@@ -29,6 +29,7 @@ while True:
 
 app.include_router(blog.router)
 app.include_router(user.router)
+app.include_router(auth.router)
 
 
 @app.get("/")

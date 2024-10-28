@@ -6,7 +6,7 @@ from typing import List
 """ Posts routes
 """
 
-router = APIRouter(prefix="/posts")
+router = APIRouter(prefix="/posts", tags=['Posts'])
 
 
 # get posts path

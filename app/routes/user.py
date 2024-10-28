@@ -6,7 +6,7 @@ from typing import List
 """ Users routes
 """
 
-router = APIRouter(prefix="/users")
+router = APIRouter(prefix="/users", tags=['Users'])
 
 
 # create user
