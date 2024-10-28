@@ -118,9 +118,33 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
 # create user
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # check if user exists and raise an exception if true 
+    user_exists = db.query(models.User).filter(models.User.email == user.email).first()
+    if user_exists:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
     user.password = hash_password(user.password)
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+# fetch a user's detail
+@app.get("/users/{id}", response_model=schemas.UserResponse)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {id} not found"
+        )
+    return user
+
+
+# fetch all users
+@app.get("/users", response_model=List[schemas.UserResponse])
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return users
