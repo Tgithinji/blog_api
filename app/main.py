@@ -1,12 +1,9 @@
-from fastapi import FastAPI, status, HTTPException, Response, Depends
+from fastapi import FastAPI
 from psycopg2.extras import RealDictCursor
 import psycopg2
 import time
-from . import models, schemas
-from .database import init_db, get_db
-from .utils import hash_password
-from sqlalchemy.orm import Session
-from typing import List
+from .database import init_db
+from .routes import blog, user
 
 app = FastAPI()
 
@@ -30,121 +27,10 @@ while True:
         time.sleep(2)
 
 
-@app.get("/sqlachemy")
-def test_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    return posts
+app.include_router(blog.router)
+app.include_router(user.router)
 
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to my API"}
-
-
-# get posts path
-@app.get("/posts", response_model=List[schemas.PostReturned])
-def get_posts(db: Session = Depends(get_db)):
-    """Get posts
-    """
-    all_posts = db.query(models.Post).all()
-    # cursor.execute("""SELECT * FROM posts""")
-    # all_posts = cursor.fetchall()
-    return all_posts
-
-
-# Create posts path
-@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostReturned)
-def create_posts(post: schemas.Post, db: Session = Depends(get_db)):
-    # cursor.execute(
-    #     """INSERT INTO posts (title, content)
-    #     VALUES (%s, %s) RETURNING *""",
-    #     (post.title, post.content)
-    # )
-    # new_post = cursor.fetchone()
-    # conn.commit()
-
-    new_post = models.Post(**post.dict())
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    return new_post
-
-
-# Get one post
-@app.get("/posts/{id}", response_model=schemas.PostReturned)
-def get_post(id: int, db: Session = Depends(get_db)):
-    # cursor.execute(
-    #     """SELECT * FROM posts
-    #     WHERE id = %s""", (str(id),)
-    # )
-    # post = cursor.fetchone()
-
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    # if post is not found raise a HTTP exception
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Post with id {id} does not exist")
-    return post
-
-
-# Update a post
-@app.put("/posts/{id}", response_model=schemas.PostReturned)
-def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
-    post_query = db.query(models.Post).filter(models.Post.id ==  id)
-
-    if not post_query.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"id {id} does not exist")
-    
-    post_query.update(post.dict(), synchronize_session=False)
-    db.commit()
-    return post_query.first()
-
-
-# Delete a post
-@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_posts(id: int, db: Session = Depends(get_db)):
-    post_query = db.query(models.Post).filter(models.Post.id == id)
-
-    if not post_query.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"id {id} does not exist")
-
-    post_query.delete(synchronize_session=False)
-    db.commit()    
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# create user
-@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    # check if user exists and raise an exception if true 
-    user_exists = db.query(models.User).filter(models.User.email == user.email).first()
-    if user_exists:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    user.password = hash_password(user.password)
-    new_user = models.User(**user.dict())
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
-
-
-# fetch a user's detail
-@app.get("/users/{id}", response_model=schemas.UserResponse)
-def get_user(id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {id} not found"
-        )
-    return user
-
-
-# fetch all users
-@app.get("/users", response_model=List[schemas.UserResponse])
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(models.User).all()
-    return users
