@@ -29,11 +29,12 @@ def verify_access_token(token: str, credential_exception):
         if id is None:
             raise credential_exception
         token_data = schemas.TokenData(id=id)
+        return token_data
     except JWTError:
         raise credential_exception
 
 
-# verifies if the token is valid and use it to secure routes
+# verify if the token is valid and use it to secure routes
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
