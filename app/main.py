@@ -5,6 +5,7 @@ import time
 from . import models, schemas
 from .database import init_db, get_db
 from sqlalchemy.orm import Session
+from typing import List
 
 app = FastAPI()
 
@@ -40,7 +41,7 @@ async def root():
 
 
 # get posts path
-@app.get("/posts")
+@app.get("/posts", response_model=List[schemas.PostReturned])
 def get_posts(db: Session = Depends(get_db)):
     """Get posts
     """
@@ -69,7 +70,7 @@ def create_posts(post: schemas.Post, db: Session = Depends(get_db)):
 
 
 # Get one post
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.PostReturned)
 def get_post(id: int, db: Session = Depends(get_db)):
     # cursor.execute(
     #     """SELECT * FROM posts
@@ -86,7 +87,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 
 # Update a post
-@app.put("/posts/{id}")
+@app.put("/posts/{id}", response_model=schemas.PostReturned)
 def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id ==  id)
 
