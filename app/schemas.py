@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Optional
 
 
 # structure of a request
@@ -43,3 +44,14 @@ class UserResponse(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+# define schemas for tokens
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+# schema for token data
+class TokenData(BaseModel):
+    id: Optional[str]
