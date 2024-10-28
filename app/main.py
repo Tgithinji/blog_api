@@ -4,6 +4,7 @@ import psycopg2
 import time
 from . import models, schemas
 from .database import init_db, get_db
+from .utils import hash_password
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -117,6 +118,7 @@ def delete_posts(id: int, db: Session = Depends(get_db)):
 # create user
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    user.password = hash_password(user.password)
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()
