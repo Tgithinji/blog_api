@@ -18,6 +18,7 @@ class Post(PostBase):
 class PostReturned(PostBase):
     id: int
     created_at: datetime
+    author_id: int
 
     class Config:
         from_attributes = True

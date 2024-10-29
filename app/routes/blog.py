@@ -35,7 +35,7 @@ def create_posts(
     # new_post = cursor.fetchone()
     # conn.commit()
     print(current_user.username)
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(author_id=current_user.id,**post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)

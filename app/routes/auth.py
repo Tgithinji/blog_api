@@ -23,11 +23,18 @@ def login(
             models.User.username == user_creds.username
         )
     ).first()
-    # check if password matches
-    verify_password = utils.verify_password(user_creds.password, user.password)
 
     # raise an exception if either of the above checks fails
-    if not user or not verify_password:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Invalid Credentials"
+        )
+    
+    # check if password matches
+    verify_password = utils.verify_password(user_creds.password, user.password)
+    # if not raise an exception
+    if not verify_password:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Invalid Credentials"
