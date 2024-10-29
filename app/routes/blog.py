@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException, Response, Depends
-from app import models, schemas
+from app import models, schemas, jwt_handler
 from app.database import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -22,15 +22,19 @@ def get_posts(db: Session = Depends(get_db)):
 
 # Create posts path
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostReturned)
-def create_posts(post: schemas.Post, db: Session = Depends(get_db)):
-    # cursor.execute(
+def create_posts(
+    post: schemas.Post,
+    current_user: int = Depends(jwt_handler.get_current_user),
+    db: Session = Depends(get_db)
+):
+    # cursor.execute(current_user
     #     """INSERT INTO posts (title, content)
     #     VALUES (%s, %s) RETURNING *""",
     #     (post.title, post.content)
     # )
     # new_post = cursor.fetchone()
     # conn.commit()
-
+    print(current_user.username)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -57,8 +61,12 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 # Update a post
 @router.put("/{id}", response_model=schemas.PostReturned)
-def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
-    post_query = db.query(models.Post).filter(models.Post.id ==  id)
+def update_post(
+    id: int, post: schemas.Post,
+    current_user: int = Depends(jwt_handler.get_current_user),
+    db: Session = Depends(get_db)
+):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
 
     if not post_query.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -71,7 +79,11 @@ def update_post(id: int, post: schemas.Post, db: Session = Depends(get_db)):
 
 # Delete a post
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_posts(id: int, db: Session = Depends(get_db)):
+def delete_posts(
+    id: int,
+    current_user: int = Depends(jwt_handler.get_current_user),
+    db: Session = Depends(get_db)
+):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     if not post_query.first():

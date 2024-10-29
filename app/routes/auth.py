@@ -3,14 +3,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.database import get_db
-from app import models, utils, jwt_handler
+from app import models, utils, jwt_handler, schemas
 """Authentication routes
 """
 
 router = APIRouter(tags=['Authentication'])
 
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 def login(
     user_creds: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -29,7 +29,7 @@ def login(
     # raise an exception if either of the above checks fails
     if not user or not verify_password:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Invalid Credentials"
         )
     
