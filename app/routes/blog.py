@@ -15,8 +15,6 @@ def get_posts(db: Session = Depends(get_db)):
     """Get posts
     """
     all_posts = db.query(models.Post).all()
-    # cursor.execute("""SELECT * FROM posts""")
-    # all_posts = cursor.fetchall()
     return all_posts
 
 
@@ -27,14 +25,6 @@ def create_posts(
     current_user: int = Depends(jwt_handler.get_current_user),
     db: Session = Depends(get_db)
 ):
-    # cursor.execute(current_user
-    #     """INSERT INTO posts (title, content)
-    #     VALUES (%s, %s) RETURNING *""",
-    #     (post.title, post.content)
-    # )
-    # new_post = cursor.fetchone()
-    # conn.commit()
-    print(current_user.username)
     new_post = models.Post(author_id=current_user.id,**post.dict())
     db.add(new_post)
     db.commit()
@@ -45,12 +35,6 @@ def create_posts(
 # Get one post
 @router.get("/{id}", response_model=schemas.PostReturned)
 def get_post(id: int, db: Session = Depends(get_db)):
-    # cursor.execute(
-    #     """SELECT * FROM posts
-    #     WHERE id = %s""", (str(id),)
-    # )
-    # post = cursor.fetchone()
-
     post = db.query(models.Post).filter(models.Post.id == id).first()
     # if post is not found raise a HTTP exception
     if not post:
