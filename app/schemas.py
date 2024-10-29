@@ -3,26 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 
-# structure of a request
-class PostBase(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-
-
-class Post(PostBase):
-    pass
-
-
-# structure of a response
-class PostReturned(PostBase):
-    id: int
-    created_at: datetime
-    author_id: int
-
-    class Config:
-        from_attributes = True
-
 # structure of th user details
 class UserBase(BaseModel):
     username: str
@@ -45,6 +25,27 @@ class UserResponse(UserBase):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+# structure of a request
+class PostBase(BaseModel):
+    title: str
+    content: str
+    published: bool = True
+
+
+class Post(PostBase):
+    pass
+
+
+# structure of a response
+class PostReturned(PostBase):
+    id: int
+    created_at: datetime
+    author: UserResponse
+
+    class Config:
+        from_attributes = True
 
 
 # define schemas for tokens

@@ -11,10 +11,18 @@ router = APIRouter(prefix="/posts", tags=['Posts'])
 
 # get posts path
 @router.get("/", response_model=List[schemas.PostReturned])
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(
+    db: Session = Depends(get_db),
+    search: str = "str",
+    Limit: int = 10,
+    skip: int = 0
+):
     """Get posts
     """
-    all_posts = db.query(models.Post).all()
+    all_posts = db.query(models.Post).filter(
+        models.Post.title.contains(search)
+    ).limit(Limit).offset(skip).all()
+
     return all_posts
 
 
