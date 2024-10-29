@@ -72,6 +72,13 @@ def update_post(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=f"id {id} does not exist")
     
+    # logic to check if user is only updates own post
+    if post_query.first().author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not authorized"
+        )
+    
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
@@ -89,6 +96,13 @@ def delete_posts(
     if not post_query.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
         detail=f"id {id} does not exist")
+    
+    # logic to check if user is only deleting own post
+    if post_query.first().author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not authorized"
+        )
 
     post_query.delete(synchronize_session=False)
     db.commit()    
