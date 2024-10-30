@@ -3,6 +3,8 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
 from .database import Base
+"""Models for the database tables
+"""
 
 
 class Post(Base):
@@ -33,3 +35,23 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+
+class Comments(Base):
+    __tablename__ = 'comments'
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    content = Column(String, nullable=False)
+    post_id = Column(
+        Integer,
+        ForeignKey("posts.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    author = relationship("User")
+    post = relationship("Post")
