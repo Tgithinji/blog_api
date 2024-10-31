@@ -2,6 +2,7 @@ from fastapi import APIRouter, status, HTTPException, Depends
 from app import models, schemas, utils
 from app.database import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 """ Users routes
 """
@@ -26,19 +27,33 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 # fetch a user's detail
-@router.get("/{id}", response_model=schemas.UserResponse)
+@router.get("/{id}", response_model=schemas.UserWithPosts)
 def get_user(id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
-    if not user:
+    # user = db.query(models.User).filter(models.User.id == id).first()
+    result = db.query(
+        models.User,
+        func.count(models.Post.author_id).label("posts")
+    ).outerjoin(
+        models.Post, models.Post.author_id == models.User.id,
+    ).group_by(models.User.id).filter(models.User.id == id).first()
+
+    if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} not found"
         )
-    return user
+    return result
 
 
 # fetch all users
-@router.get("/", response_model=List[schemas.UserResponse])
+@router.get("/", response_model=List[schemas.UserWithPosts])
 def get_users(db: Session = Depends(get_db)):
-    users = db.query(models.User).all()
-    return users
+    # users = db.query(models.User).all()
+    result = db.query(
+        models.User,
+        func.count(models.Post.author_id).label("posts")
+    ).outerjoin(
+        models.Post, models.Post.author_id == models.User.id,
+    ).group_by(models.User.id).all()
+
+    return result

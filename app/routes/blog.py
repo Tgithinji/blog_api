@@ -2,6 +2,7 @@ from fastapi import APIRouter, status, HTTPException, Response, Depends
 from app import models, schemas, jwt_handler
 from app.database import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 """ Posts routes
 """
@@ -10,18 +11,24 @@ router = APIRouter(prefix="/posts", tags=['Posts'])
 
 
 # get posts path
-@router.get("/", response_model=List[schemas.PostReturned])
+@router.get("/", response_model=List[schemas.PostWithComments])
 def get_posts(
     db: Session = Depends(get_db),
     search: str = "",
-    Limit: int = 10,
+    limit: int = 10,
     skip: int = 0
 ):
     """Get posts
     """
-    all_posts = db.query(models.Post).filter(
+
+    all_posts = db.query(
+        models.Post,
+        func.count(models.Comments.post_id).label("comments")
+    ).outerjoin(
+        models.Comments, models.Comments.post_id == models.Post.id,
+    ).group_by(models.Post.id).filter(
         models.Post.title.contains(search)
-    ).limit(Limit).offset(skip).all()
+    ).limit(limit).offset(skip).all()
 
     return all_posts
 
@@ -41,15 +48,22 @@ def create_posts(
 
 
 # Get one post
-@router.get("/{id}", response_model=schemas.PostReturned)
+@router.get("/{id}", response_model=schemas.PostWithComments)
 def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    # post = db.query(models.Post).filter(models.Post.id == id).first()
+    # comment_count = db.query(func.count(models.Comments.id)).filter(models.Comments.post_id == id).scalar()
+    post = db.query(
+        models.Post,
+        func.count(models.Comments.post_id).label("comments")
+    ).outerjoin(
+        models.Comments, models.Comments.post_id == models.Post.id,
+    ).group_by(models.Post.id).filter(models.Post.id == id).first()
+    
     # if post is not found raise a HTTP exception
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id {id} does not exist")
     return post
-
 
 # Update a post
 @router.put("/{id}", response_model=schemas.PostReturned)

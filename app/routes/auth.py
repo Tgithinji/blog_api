@@ -15,7 +15,7 @@ def login(
     user_creds: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    # user can login either with email or username
+    # user can login either using their email or username
     # check if either matches with credentials provided
     user = db.query(models.User).filter(
         or_(
