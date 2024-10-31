@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException, Depends
-from app import models, schemas, utils
+from app import models, schemas, password_hash
 from app.database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -11,15 +11,21 @@ router = APIRouter(prefix="/users", tags=['Users'])
 
 
 # create user
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+@router.post(
+        "/",
+        status_code=status.HTTP_201_CREATED,
+        response_model=schemas.UserResponse
+)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    # check if user exists and raise an exception if true 
-    user_exists = db.query(models.User).filter(models.User.email == user.email).first()
+    # check if user exists and raise an exception if true
+    user_exists = db.query(models.User).filter(
+        models.User.email == user.email
+    ).first()
     if user_exists:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    user.password = utils.hash_password(user.password)
-    new_user = models.User(**user.dict())
+
+    user.password = password_hash.hash_password(user.password)
+    new_user = models.User(**user.model_dump())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.database import get_db
-from app import models, utils, jwt_handler, schemas
+from app import models, password_hash, jwt_handler, schemas
 """Authentication routes
 """
 
@@ -30,17 +30,17 @@ def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Invalid Credentials"
         )
-    
+
     # check if password matches
-    verify_password = utils.verify_password(user_creds.password, user.password)
+    verify_password = password_hash.verify_password(user_creds.password, user.password)
     # if not raise an exception
     if not verify_password:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Invalid Credentials"
         )
-    
+
     # create and return a token
-    access_token = jwt_handler.create_access_token(data = {"user_id": user.id})
+    access_token = jwt_handler.create_access_token(data={"user_id": user.id})
 
     return {"access_token": access_token, "token_type": "bearer"}

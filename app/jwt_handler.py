@@ -15,7 +15,9 @@ def create_access_token(data: dict):
     # create a copy of the data so as not to mess up the original data
     to_encode = data.copy()
 
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     to_encode.update({"exp": expire})
     access_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -55,4 +57,3 @@ def get_current_user(
     user = db.query(models.User).filter(models.User.id == token.id).first()
 
     return user
-

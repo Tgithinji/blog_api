@@ -34,13 +34,16 @@ def get_posts(
 
 
 # Create posts path
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostReturned)
+@router.post(
+        "/", status_code=status.HTTP_201_CREATED,
+        response_model=schemas.PostReturned
+)
 def create_posts(
     post: schemas.Post,
     current_user: int = Depends(jwt_handler.get_current_user),
     db: Session = Depends(get_db)
 ):
-    new_post = models.Post(author_id=current_user.id,**post.dict())
+    new_post = models.Post(author_id=current_user.id, **post.model_dump())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -50,20 +53,19 @@ def create_posts(
 # Get one post
 @router.get("/{id}", response_model=schemas.PostWithComments)
 def get_post(id: int, db: Session = Depends(get_db)):
-    # post = db.query(models.Post).filter(models.Post.id == id).first()
-    # comment_count = db.query(func.count(models.Comments.id)).filter(models.Comments.post_id == id).scalar()
     post = db.query(
         models.Post,
         func.count(models.Comments.post_id).label("comments")
     ).outerjoin(
         models.Comments, models.Comments.post_id == models.Post.id,
     ).group_by(models.Post.id).filter(models.Post.id == id).first()
-    
+
     # if post is not found raise a HTTP exception
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post with id {id} does not exist")
     return post
+
 
 # Update a post
 @router.put("/{id}", response_model=schemas.PostReturned)
@@ -75,16 +77,18 @@ def update_post(
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     if not post_query.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"id {id} does not exist")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"id {id} does not exist"
+        )
+
     # logic to check if user is only updates own post
     if post_query.first().author_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Operation not authorized"
         )
-    
+
     post_query.update(post.dict(), synchronize_session=False)
     db.commit()
     return post_query.first()
@@ -100,9 +104,11 @@ def delete_posts(
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     if not post_query.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"id {id} does not exist")
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"id {id} does not exist"
+        )
+
     # logic to check if user is only deleting own post
     if post_query.first().author_id != current_user.id:
         raise HTTPException(
@@ -111,5 +117,5 @@ def delete_posts(
         )
 
     post_query.delete(synchronize_session=False)
-    db.commit()    
+    db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

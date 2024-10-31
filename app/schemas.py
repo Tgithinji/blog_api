@@ -75,6 +75,7 @@ class TokenData(BaseModel):
 class CommentsCreate(BaseModel):
     content: str
 
+
 class CommentsResponse(CommentsCreate):
     id: int
     post_id: int
