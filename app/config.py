@@ -5,11 +5,11 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
-    database_name: str
-    database_hostname: str
-    database_port: str
-    database_password: str
-    database_username: str
+    db_name: str
+    db_hostname: str
+    db_port: str
+    db_password: str
+    db_username: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

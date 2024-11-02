@@ -1,13 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from .config import settings
+from .config import settings as set
 
 
-DATABASE_URL = f'postgresql+psycopg2://{
-    settings.database_username}:{settings.database_password}@{
-        settings.database_hostname}:{settings.database_port
-                                     }/{settings.database_name}'
+DATABASE_URL = f'postgresql+psycopg2://{set.db_username}:{set.db_password}@{set.db_hostname}:{set.db_port}/{set.db_name}'
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
