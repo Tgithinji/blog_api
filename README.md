@@ -17,7 +17,7 @@ The project is built using FastAPI and includes user authentication, post/commen
 1. Clone the repository
 
 ```bash
-git@github.com:Tgithinji/blog_api.git
+git clone git@github.com:Tgithinji/blog_api.git
 cd blog_api
 ```
 
@@ -35,14 +35,14 @@ pip install -r requirements.txt
 ```
 
 4. Create a .env file and setup environment variables requires to connect to your database in the following order
-   - secret_key: string
-   - algorithm: string
-   - token_expiry: int
-   - db_username: str
-   - db_password: str
-   - db_hostname: str
-   - db_port: str
-   - db_name: str
+   - SECRET_KEY: string
+   - ALGORITHM: string
+   - TOKEN_EXPIRY: int
+   - DB_USERNAME: str
+   - DB_PASSWORD: str
+   - DB_HOSTNAME: str
+   - DB_PORT: str
+   - DB_NAME: str
 
 #### Usage
 
@@ -62,7 +62,9 @@ fastapi dev app/main.py
 ## EndPoints
 
 You can test endpoints with `curl` in the terminal after the application has started successfully
-Or visit `http://127.0.0.1:8000/docs` to view the api documentation by swagger UI
+
+Or visit `http://127.0.0.1:8000/docs` on your browser to view the api documentation by swagger UI
+
 Or you can use postman like demonstrated in the demo video
 
 #### Authentication
