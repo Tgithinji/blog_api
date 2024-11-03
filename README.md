@@ -2,6 +2,7 @@
 
 This is a blogging platform api that allows users to interact with posts.
 The project is built using FastAPI and includes user authentication, post/comments creation, fetch endpoints.
+![Watch live demo](https://drive.google.com/file/d/12VvO0RlefoGpfJCYZ7VPLRMhpx2c1kTI/view?usp=sharing)
 
 ## Installation
 
@@ -26,7 +27,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. Install the required dependancies
+3. Install the required dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -35,12 +36,12 @@ pip install -r requirements.txt
 4. Create a .env file and setup environment variables requires to connect to your database in the following order
    - secret_key: string
    - algorithm: string
-   - access_token_expire_minutes: int
-   - database_username: str
-   - database_password: str
-   - database_hostname: str
-   - database_port: str
-   - database_name: str
+   - token_expiry: int
+   - db_username: str
+   - db_password: str
+   - db_hostname: str
+   - db_port: str
+   - db_name: str
 
 #### Usage
 
@@ -59,17 +60,19 @@ fastapi dev app/main.py
 
 ## EndPoints
 
+You can test endpoints with `curl` in the terminal after the application has started successfully
+Or visit `http://127.0.0.1:8000/docs` to view the api documentation by swagger UI
+Or you can use postman like demonstrated in the demo video
+
 #### Authentication
 
 - **Login `Post`** `/login`
   Example:
-  Request body:
 
-```json
-{
-  "username": "user@example.com",
-  "password": "yourpassword"
-}
+```bash
+curl -X POST "http://127.0.0.1:8000/login" \
+-H "Content-Type: application/json" \
+-d '{"username": "newuser", "password": "securepassword"}'
 ```
 
 Response Body:
@@ -83,19 +86,37 @@ Response Body:
 
 #### User
 
-- **Create User** **`Post`** `/users` - Authentication required
-  Request body:
+- **Create User** **`Post`** `/users`
+  - Authentication required
+    Example
+
+```bash
+curl -X POST "http://127.0.0.1:8000/login" \
+-H "Content-Type: application/json" \
+-d '{
+      "username": "newuser", "email": "newuser@gmail.com" "password": "securepassword"
+    }'
+```
+
+Response body:
 
 ```json
 {
   "username": "user1",
   "email": "user1@example.com",
-  "password": "yourpassword"
+  "id": "1",
+  "created_at": "time created"
 }
 ```
 
 - **Get User `GET`** `/users/{id}`
-  Response body:
+  Example
+
+```bash
+curl -X GET http://127.0.0.1:8000/users/1
+```
+
+Response body:
 
 ```json
 {
@@ -112,12 +133,23 @@ Response Body:
 
 - **Get All Posts: `GET`** `/posts`
 
-  - Returns all posts with their comments count
-  - Pagination is supported
-  - search query is supported to search by title
+Example
+
+```bash
+curl -X GET http://127.0.0.1:8000/posts
+```
+
+- Returns all posts with their comments count
+- Pagination is supported
+- search query is supported to search by title
 
 - **Get Single Post: `GET`** `/posts/{id}`
   Response body:
+  Example
+
+```bash
+curl -X GET http://127.0.0.1:8000/posts/1
+```
 
 ```json
 {
@@ -130,31 +162,52 @@ Response Body:
       "username": "jane_doe",
       "email": "jane_doe@example.com"
     },
-    "comment_count": 5
+    "comments": 5
   }
 }
 ```
 
-- **Create Post: `POST`** `/posts` - Requires Authentication
-  Request body:
+- **Create Post: `POST`** `/posts`
+  - Requires Authentication
+    Response body same as getting a single post
+    Example usage:
 
-```json
-{
-  "title": "Post Title",
-  "content": "Post content"
-}
+```bash
+curl -X POST http://127.0.0.1:8000/posts \
+     -H "Authorization: Bearer <TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "My Post", "content": "This is my first post"}'
 ```
 
 - **Update Post `Put`** `/posts/{id}`
-  - Requires authentication
-    Request body same as Create Post
+- Requires authentication
+  Request body same as Create Post
+  Example usage:
+
+```bash
+curl -X PUT http://127.0.0.1:8000/posts/1 \
+     -H "Authorization: Bearer <TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "Changed Post", "content": "This is my changed post"}'
+```
+
 - **Delete Post: `Delete`** `/post{id}`
   - Deletes a post by id
 
+```bash
+curl -X GET http://127.0.0.1:8000/posts/1
+```
+
 #### Comments
 
-- **Get Single comment: `GET`** `/posts/{id}/comments{id}`
-  Response body:
+- **Get comments for a single post: `GET`** `/posts/{id}/comments`
+  Example
+
+```bash
+curl -X GET http://127.0.0.1:8000/posts/1/comments
+```
+
+Returns a list of comments each with the following Response body:
 
 ```json
 {
@@ -165,41 +218,20 @@ Response Body:
 }
 ```
 
-- **Create Comment: `POST`** `/comments` - Requires Authentication
-  Request body:
+- **Create Comment: `POST`** `posts/{id}/comments`
+  - Requires Authentication
+    Response body same as above
 
-```json
-{
-  "content": "comment"
-}
+```bash
+curl -X POST http://127.0.0.1:8000/posts/1/comments \
+     -H "Authorization: Bearer <TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"content": "comment"}'
 ```
 
 - **Delete Comment: `Delete`** `/post{id}/comments/{id}`
   - Deletes a comment by id
 
-## Example usage
-
-You can test endpoints with `curl` in the terminal after the application has started successfully
-
-- Fetch all posts
-
 ```bash
-curl -X GET http://127.0.0.1:8000/posts
-```
-
-- Create a post
-
-```bash
-curl -X POST http://127.0.0.1:8000/posts \
-     -H "Authorization: Bearer <TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{"title": "My Post", "content": "This is my first post"}'
-```
-
-- Login a user
-
-```bash
-curl -X POST "http://127.0.0.1:8000/login" \
--H "Content-Type: application/json" \
--d '{"username": "newuser", "password": "securepassword"}'
+curl -X DELETE http://127.0.0.1:8000/posts/1comments/1
 ```
