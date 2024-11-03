@@ -2,6 +2,8 @@ from app.main import app
 from fastapi.testclient import TestClient
 from app.schemas import *
 from .testingdb import client, db
+from app.jwt_handler import settings as set
+from jose import jwt
 import pytest
 
 
@@ -36,4 +38,10 @@ def test_login(client, test_user):
         "username": test_user['username'],
         "password": test_user['password']
     })
+    ## decode token received to check if its valid
+    res_body = Token(**res.json())
+    payload = jwt.decode(res_body.access_token, set.secret_key, algorithms=[set.algorithm])
+
+    id = payload.get('user_id')
+    assert test_user['id'] == id
     assert res.status_code == 200
