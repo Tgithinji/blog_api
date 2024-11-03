@@ -8,7 +8,7 @@ The project is built using FastAPI and includes user authentication, post/commen
 
 ### Requirements
 
-- Python 3.9+
+- Python3
 - PostgreSQL
 
 #### Steps
