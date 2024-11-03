@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     secret_key: str
     algorithm: str
-    access_token_expire_minutes: int
+    token_expiry: int
     db_name: str
     db_hostname: str
     db_port: str
