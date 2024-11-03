@@ -3,6 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db, Base
+from app.jwt_handler import create_token
+from app import models
 import pytest
 
 
@@ -47,3 +49,44 @@ def test_user(client):
     new_user = res.json()
     new_user['password'] = data['password']
     return new_user
+
+
+@pytest.fixture
+def token(test_user):
+    return create_token({'user_id': test_user['id']})
+
+
+@pytest.fixture
+def authenticated_client(client, token):
+    client.headers = {**client.headers, "Authorization": f'bearer {token}'}
+    return client
+
+
+@pytest.fixture
+def create_posts(test_user, db):
+    posts_array = [
+        {
+            "title": "first post",
+            "content": "1st content",
+            "author_id": test_user['id']
+        },
+        {
+            "title": "second post",
+            "content": "2nd content",
+            "author_id": test_user['id']
+        },
+        {
+            "title": "third post",
+            "content": "3rd content",
+            "author_id": test_user['id']
+        }
+    ]
+
+    def create_post_model(posts):
+        return models.Post(**posts)
+
+    posts_list = list(map(create_post_model, posts_array))
+    db.add_all(posts_list)
+    db.commit()
+
+    return db.query(models.Post).all()
