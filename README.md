@@ -2,7 +2,8 @@
 
 This is a blogging platform api that allows users to interact with posts.
 The project is built using FastAPI and includes user authentication, post/comments creation, fetch endpoints.
-![Watch live demo](https://drive.google.com/file/d/12VvO0RlefoGpfJCYZ7VPLRMhpx2c1kTI/view?usp=sharing)
+
+[Watch live demo](https://drive.google.com/file/d/12VvO0RlefoGpfJCYZ7VPLRMhpx2c1kTI/view?usp=sharing)
 
 ## Installation
 
