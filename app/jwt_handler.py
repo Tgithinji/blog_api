@@ -11,7 +11,7 @@ ALGORITHM = settings.algorithm
 TOKEN_EXPIRY = settings.token_expiry
 
 
-def create_access_token(data: dict):
+def create_token(data: dict):
     # create a copy of the data so as not to mess up the original data
     to_encode = data.copy()
 
@@ -24,7 +24,7 @@ def create_access_token(data: dict):
     return access_token
 
 
-def verify_access_token(token: str, credential_exception):
+def verify_token(token: str, credential_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
@@ -52,7 +52,7 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"}
     )
 
-    token = verify_access_token(token, credential_exception)
+    token = verify_token(token, credential_exception)
 
     user = db.query(models.User).filter(models.User.id == token.id).first()
 

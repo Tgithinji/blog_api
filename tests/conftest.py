@@ -1,5 +1,4 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from app.main import app
@@ -34,3 +33,17 @@ def client(db):
             db.close()
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
+
+
+# fixture to create new user to make login independent
+@pytest.fixture
+def test_user(client):
+    data = {
+        "username": "newuser",
+        "email": "newuser@gmail.com",
+        "password": "password123"
+        }
+    res = client.post("/users", json=data)
+    new_user = res.json()
+    new_user['password'] = data['password']
+    return new_user

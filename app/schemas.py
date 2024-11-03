@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from typing import Optional
 """Structure of the responses and request details
@@ -19,8 +19,7 @@ class UserResponse(UserBase):
     id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class UserWithPosts(BaseModel):
@@ -51,8 +50,7 @@ class PostReturned(PostBase):
     created_at: datetime
     author: UserResponse
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class PostWithComments(BaseModel):
