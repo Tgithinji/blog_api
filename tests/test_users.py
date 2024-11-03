@@ -44,3 +44,5 @@ def test_login_failure(client, test_user, username, password, status_code):
 def test_get_user(client, test_user):
     res = client.get(f"/users/{test_user['id']}")
     assert res.status_code == 200
+    user = UserWithPosts(**res.json())
+    assert user.User.email == test_user['email']
