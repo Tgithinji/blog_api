@@ -56,6 +56,7 @@ class PostReturned(PostBase):
 class PostWithComments(BaseModel):
     Post: PostReturned
     comments: int
+    likes: int
 
 
 # define schemas for tokens created

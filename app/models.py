@@ -89,3 +89,7 @@ class Likes(Base):
     # Ensure each user can like a specific post or comment only once
     __table_args__ = (UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'),
                       UniqueConstraint('user_id', 'comment_id', name='unique_user_comment_like'))
+    
+    user = relationship("User")
+    post = relationship("Post")
+    comment = relationship("Comments")

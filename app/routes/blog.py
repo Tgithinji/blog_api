@@ -23,9 +23,12 @@ def get_posts(
 
     all_posts = db.query(
         models.Post,
-        func.count(models.Comments.post_id).label("comments")
+        func.count(models.Comments.post_id).label("comments"),
+        func.count(models.Likes.post_id).label("likes")
     ).outerjoin(
         models.Comments, models.Comments.post_id == models.Post.id,
+    ).outerjoin(
+        models.Likes, models.Likes.post_id == models.Post.id
     ).group_by(models.Post.id).filter(
         models.Post.title.contains(search)
     ).limit(limit).offset(skip).all()
@@ -55,9 +58,12 @@ def create_posts(
 def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(
         models.Post,
-        func.count(models.Comments.post_id).label("comments")
+        func.count(models.Comments.post_id).label("comments"),
+        func.count(models.Likes.post_id).label("likes")
     ).outerjoin(
         models.Comments, models.Comments.post_id == models.Post.id,
+    ).outerjoin(
+        models.Likes, models.Likes.post_id == models.Post.id,
     ).group_by(models.Post.id).filter(models.Post.id == id).first()
 
     # if post is not found raise a HTTP exception
