@@ -90,3 +90,34 @@ def create_posts(test_user, db):
     db.commit()
 
     return db.query(models.Post).all()
+
+
+@pytest.fixture
+def create_comments(test_user, create_posts, db):
+    comments_array = [
+        {
+            "content": "1st comment",
+            "user_id" : test_user['id'],
+            "post_id": create_posts[0].id
+        },
+        {
+            "content": "1st comment",
+            "user_id" : test_user['id'],
+            "post_id": create_posts[0].id
+        },
+        {
+            "content": "1st comment",
+            "user_id" : test_user['id'],
+            "post_id": create_posts[0].id
+        }
+    ]
+
+    def create_comment_model(comments):
+        return models.Comments(**comments)
+    
+    comments_list = list(map(create_comment_model, comments_array))
+
+    db.add_all(comments_list)
+    db.commit()
+
+    return db.query(models.Comments).all()
