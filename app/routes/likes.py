@@ -72,13 +72,13 @@ def like_comment(
             detail=f"Comment with {com_id} does not exist"
         )
     
-    # check if user had liked post
-    like_query = db.query(models.Likes).filter(
+    # check if user had liked comment
+    comment_query = db.query(models.Likes).filter(
         models.Likes.comment_id == com_id,
         models.Likes.user_id == current_user.id
     )
-    if like_query.first():
-        like_query.delete(synchronize_session=False)
+    if comment_query.first():
+        comment_query.delete(synchronize_session=False)
         db.commit()
         return {"message": "You unliked comment"}
     

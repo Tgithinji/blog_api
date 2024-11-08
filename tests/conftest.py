@@ -121,3 +121,18 @@ def create_comments(test_user, create_posts, db):
     db.commit()
 
     return db.query(models.Comments).all()
+
+
+@pytest.fixture
+def like_post(test_user, db, create_posts):
+    new_like = models.Likes(user_id=test_user['id'], post_id=create_posts[0].id)
+    db.add(new_like)
+    db.commit()
+
+
+@pytest.fixture
+def like_comment(test_user, db, create_comments):
+    new_like = models.Likes(user_id=test_user['id'], comment_id=create_comments[0].id)
+    db.add(new_like)
+    db.commit()
+
