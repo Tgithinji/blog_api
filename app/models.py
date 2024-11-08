@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
@@ -64,3 +64,28 @@ class Comments(Base):
 
     author = relationship("User")
     post = relationship("Post")
+
+
+class Likes(Base):
+    __tablename__ = "likes"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    post_id = Column(
+        Integer,
+        ForeignKey("posts.id", ondelete="CASCADE"),
+        nullable=True
+    )
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    comment_id = Column(
+        Integer,
+        ForeignKey("comments.id", ondelete="CASCADE"),
+        nullable=True
+    )
+
+    # Ensure each user can like a specific post or comment only once
+    __table_args__ = (UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'),
+                      UniqueConstraint('user_id', 'comment_id', name='unique_user_comment_like'))

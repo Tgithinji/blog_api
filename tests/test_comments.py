@@ -55,6 +55,7 @@ def test_delete_comment(authenticated_client, create_comments, create_posts):
     res = authenticated_client.delete(f"posts/{create_posts[0].id}/comments/{create_comments[0].id}")
     assert res.status_code == 204
 
+
 def test_delete_non_existing_comment(authenticated_client, create_posts):
     res = authenticated_client.delete(f"/posts/{create_posts[0].id}/comments/0000000")
     assert res.status_code == 404
