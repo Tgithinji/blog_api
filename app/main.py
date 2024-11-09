@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .database import init_db
-from .routes import blog, user, auth, comments, likes
+from .routes import blog, user, auth, comments, likes, follows
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -25,6 +25,7 @@ app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(comments.router)
 app.include_router(likes.router)
+app.include_router(follows.router)
 
 
 @app.get("/")

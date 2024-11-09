@@ -109,5 +109,5 @@ class Follow(Base):
         primary_key=True
     )
 
-    follower = relationship("User")
-    following = relationship("User")
+    follower = relationship("User", foreign_keys=[follower_id])
+    following = relationship("User", foreign_keys=[following_id])
