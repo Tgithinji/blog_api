@@ -93,3 +93,21 @@ class Likes(Base):
     user = relationship("User")
     post = relationship("Post")
     comment = relationship("Comments")
+
+
+class Follow(Base):
+    __tablename__ =  "follows"
+
+    follower_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+    following_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
+    follower = relationship("User")
+    following = relationship("User")
