@@ -25,6 +25,8 @@ class UserResponse(UserBase):
 class UserWithPosts(BaseModel):
     User: UserResponse
     posts: int
+    followers: int
+    following: int
 
 
 # login structure

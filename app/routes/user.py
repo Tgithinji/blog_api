@@ -31,17 +31,25 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-
+ 
 # fetch a user's detail
 @router.get("/{id}", response_model=schemas.UserWithPosts)
 def get_user(id: int, db: Session = Depends(get_db)):
     # user = db.query(models.User).filter(models.User.id == id).first()
+    following_query = db.query(func.count(models.Follow.follower_id)).filter(
+        models.Follow.follower_id == id
+    )
+    followers_query = db.query(func.count(models.Follow.following_id)).filter(
+        models.Follow.following_id == id
+    )
     result = db.query(
         models.User,
-        func.count(models.Post.author_id).label("posts")
+        func.count(models.Post.author_id).label("posts"),
+        following_query.scalar_subquery().label("following"),
+        followers_query.scalar_subquery().label("followers")
     ).outerjoin(
         models.Post, models.Post.author_id == models.User.id,
-    ).group_by(models.User.id).filter(models.User.id == id).first()
+    ).filter(models.User.id == id).group_by(models.User.id).first()
 
     if not result:
         raise HTTPException(
@@ -55,9 +63,17 @@ def get_user(id: int, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[schemas.UserWithPosts])
 def get_users(db: Session = Depends(get_db)):
     # users = db.query(models.User).all()
+    following_query = db.query(func.count(models.Follow.follower_id)).filter(
+        models.Follow.follower_id == models.User.id
+    )
+    followers_query = db.query(func.count(models.Follow.following_id)).filter(
+        models.Follow.following_id == models.User.id
+    )
     result = db.query(
         models.User,
-        func.count(models.Post.author_id).label("posts")
+        func.count(models.Post.author_id).label("posts"),
+        following_query.scalar_subquery().label("following"),
+        followers_query.scalar_subquery().label("followers")
     ).outerjoin(
         models.Post, models.Post.author_id == models.User.id,
     ).group_by(models.User.id).all()
