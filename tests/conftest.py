@@ -136,3 +136,35 @@ def like_comment(test_user, db, create_comments):
     db.add(new_like)
     db.commit()
 
+
+@pytest.fixture
+def create_users(db):
+    users_array = [
+        {
+            "username": "user1",
+            "email": "user1@gmail.com",
+            "password": "password123"
+        },
+        {
+            "username": "user2",
+            "email": "user2@gmail.com",
+            "password": "password123"
+        }
+    ]
+
+
+    def create_user_model(users):
+        return models.User(**users)
+
+    users_list = list(map(create_user_model, users_array))
+    db.add_all(users_list)
+    db.commit()
+
+    return db.query(models.User).all()
+
+
+@pytest.fixture
+def follow_user(test_user, db, create_users):
+    new_follow = models.Follow(follower_id=test_user['id'], following_id=create_users[1].id)
+    db.add(new_follow)
+    db.commit()
